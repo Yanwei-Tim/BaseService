@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+http://www.springframework.org/schema/tx
+http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+http://www.springframework.org/schema/jee
+http://www.springframework.org/schema/jee/spring-jee-3.1.xsd
+http://www.springframework.org/schema/aop
+http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	    <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+	    <property name="ignoreResourceNotFound" value="true" />
+	    <property name="locations">
+	         <list>
+	         <!--  
+	            <value>file:/opt/project/api/application.properties</value>
+	            <value>file:c:/project/api/application.properties</value>
+	            -->
+	              <value>classpath*:application.properties</value>
+	        </list>
+	    </property>
+	</bean>
+	
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="${db.url}" />
+		<property name="username" value="${db.user}" />
+		<property name="password" value="${db.pw}" />
+		<property name="testOnBorrow" value="true" />
+		<property name="testOnReturn" value="true" />
+		<property name="testWhileIdle" value="true" />
+		<property name="validationQuery" value="select 1" />
+	</bean>
+	
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.jdbc.fetch_size">100</prop>
+				<prop key="hibernate.jdbc.batch_size">50</prop>
+				<prop key="javax.persistence.validation.mode">none</prop>
+				<prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate4.SpringSessionContext
+				</prop>
+			</props>
+		</property>
+		<property name="packagesToScan">
+			<list>
+				<value>com.unistrong.tracker.model</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="create*" propagation="REQUIRED" />
+			<tx:method name="save*" propagation="REQUIRED" />
+			<tx:method name="add*" propagation="REQUIRED" />
+			<tx:method name="insert*" propagation="REQUIRED" />
+			<tx:method name="put*" propagation="REQUIRED" />
+
+			<tx:method name="update*" propagation="REQUIRED" />
+			<tx:method name="merge*" propagation="REQUIRED" />
+			<tx:method name="modify*" propagation="REQUIRED" />
+			<tx:method name="change*" propagation="REQUIRED" />
+			<tx:method name="use*"    propagation="REQUIRED" />
+
+			<tx:method name="delete*" propagation="REQUIRED" />
+			<tx:method name="remove*" propagation="REQUIRED" />
+ 			<tx:method name="push*"   propagation="REQUIRED" />
+ 			
+ 			
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="list*" read-only="true" />
+			<tx:method name="find*" read-only="true" />
+			<tx:method name="load*" read-only="true" />
+			<tx:method name="search*" read-only="true" />
+			<tx:method name="count*" read-only="true" />
+			<tx:method name="*" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config expose-proxy="true">
+		<aop:pointcut expression="execution(* com.unistrong.tracker.dao..*(..))"
+			id="managedServiceOperation" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="managedServiceOperation" />
+		<aop:advisor advice-ref="txAdvice"
+			pointcut="execution(* module.orm..*.*(..))" />
+	</aop:config>
+	
+	<context:component-scan
+		base-package="
+		com.unistrong.tracker.dao,
+		com.unistrong.tracker.entry,
+		com.unistrong.tracker.handle,
+		com.unistrong.tracker.service
+	" />
+	
+	<aop:aspectj-autoproxy proxy-target-class="true" />
+	
+	<bean id="mailConf" class="com.unistrong.tracker.handle.manage.MailConf">
+        <!-- http://lbs.capcare.com.cn/resetPwd.shtml -->
+        <!-- http://localhost:8085/api/_html/user/userPwd.html -->
+		<property name="url" value="http://lbs.capcare.com.cn/resetPwd.shtml" />
+		<property name="from" value="capcare_service@chinalbs.org" />
+		<property name="icon" value="${icon.file}" />
+	</bean>
+	
+    <bean id="javaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="mail.chinalbs.org" />
+        <property name="port" value="25" />
+		<!-- capcare/capcare2013 capcare_vip/capcare -->
+        <property name="username" value="capcare_service" />
+        <property name="password" value="capcare2013" />
+        <property name="javaMailProperties">
+            <props>
+                <prop key="mail.smtp.timeout">30000</prop>
+                <prop key="mail.smtp.auth">true</prop>
+                <prop key="mail.smtp.starttls.enable">false</prop>
+            </props>
+        </property>
+    </bean>
+
+	<bean id="config" class="com.unistrong.tracker.handle.manual.Config">
+		<property name="interval" value="180" />
+		<property name="layers" value="3" />
+		<property name="share" value="http://lbs.capcare.com.cn/share.html"/>
+		<property name="env" value="sandbox"/>
+	</bean>
+	
+	<!--轨迹过滤器配置  -->
+	<bean id="carOrbitAngleFilter"  class="com.unistrong.tracker.service.impl.CarOrbitAngleFilter">
+		<property name="angle" value="45" />
+	</bean>
+	
+	<bean id="carFilters"  class="org.springframework.beans.factory.config.ListFactoryBean">
+		<property name="targetListClass">
+			<value>java.util.ArrayList</value>
+		</property>
+		<property name="sourceList">
+			<list>
+				<ref bean="carOrbitCellFilter" />
+				<ref bean="orbitDistanceFilter" />
+				<ref bean="carOrbitAngleFilter" />
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="lowSpeedDistanceFilter"  class="com.unistrong.tracker.service.impl.OrbitDistanceFilter">
+		<property name="minDistance" value="0.35" />
+	</bean>
+	
+	<bean id="lowSpeedFilters"  class="org.springframework.beans.factory.config.ListFactoryBean">
+		<property name="targetListClass">
+			<value>java.util.ArrayList</value>
+		</property>
+		<property name="sourceList">
+			<list>
+				<ref bean="orbitAngleFilter" />
+				<ref bean="lowSpeedDistanceFilter" />
+			</list>
+		</property>
+	</bean>
+	
+	
+	<import resource="classpath:contextCache.xml" />
+	<import resource="classpath:database-spot.xml" />
+</beans>

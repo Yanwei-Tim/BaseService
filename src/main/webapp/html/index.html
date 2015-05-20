@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>用户登录--历史轨迹查询</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/start/jquery-ui.css"/>
+    <link rel="stylesheet" href="css/jquery.timepicker.addon.css" />
+    <link rel="stylesheet" href="css/leaflet.css">
+
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/leaflet.awesome-markers.css">
+    <link rel="stylesheet" href="css/index.css">
+
+    <script src="js/jquery1.10.2.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+    <script src="js/jquery.md5.js"></script>
+    <script src="js/jquery.cookie.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/jquery.timepicker.addon.js"></script>
+    <script src="js/jquery.ui.datepicker-zh-CN.js"></script>
+    <script src="js/leaflet-src.js"></script>
+    <script src="js/leaflet.awesome-markers.js"></script>
+    <script src="js/LeafletPlayback.js"></script>
+
+    <script src="js/network.js"></script>
+    <script src="js/index.js"></script>
+</head>
+<body>
+    <!--&lt;!&ndash;登录框&ndash;&gt;-->
+    <div id="loginModal" class="modal hide fade">
+        <div class="modal-header">
+            <h3>用户登录</h3>
+        </div>
+        <div class="modal-body">
+            <div class="control-group">
+                <label class="control-label" for="inputName">用户名</label>
+                <div class="controls">
+                    <input type="text" id="inputName" placeholder="UserName" value="d">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="inputPassword">密 码</label>
+                <div class="controls">
+                    <input type="password" id="inputPassword" placeholder="Password" value="d">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#" id="loginBtn" class="btn btn-primary">登 录</a>
+        </div>
+    </div>
+
+    <div class="date-wrap">
+        <input type="text" placeholder="开始时间" id="beginTime" class="date">
+        <input type="text" placeholder="结束时间" id="endTime" class="date">
+        <select  id="deviceList"></select>
+        <button type="button" id="search" class="btn btn-primary">查 询</button>
+        <span>(</span>
+        <label for="day-1" style="display: inline">1天前</label>
+        <input type="radio" name="time-select" id="day-1">
+        <label for="day-2" style="display: inline;margin-left: 10px">2天前</label>
+        <input type="radio" name="time-select" id="day-2">
+        <span>)</span>
+
+        <button type="button" id="showmap" class="btn btn-primary">轨迹查询</button>
+        <button type="button" id="upload" class="btn btn-primary">上传位置点</button>
+
+    </div>
+
+    <!--位置点table-->
+    <div class="content-wrap">
+        <div class="table-wrap" style="overflow: auto">
+            <table id="posTable" class="table table-striped table-condensed">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>经度</th>
+                    <th>纬度</th>
+                    <th>数据包自带时间</th>
+                    <th>服务器时间</th>
+                    <th>停留时间</th>
+                    <th>定位方式</th>
+                    <th>速度</th>
+                    <th>两点间距离（km）</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination">
+            <ul id="page">
+
+            </ul>
+        </div>
+    </div>
+    <img src="img/loading.gif" class="loadingPic">
+    <div id="playBackWrap">
+        <div id="map"></div>
+        <button type="button" id="hideMap" class="btn btn-primary">退出回放</button>
+    </div>
+    <div id="uploadWrap">
+        <div id="map_upload"></div>
+        <div id="status_box">
+            <div id="point_container">
+                <p class="tip">(当前设备：<span id="currentSn"></span>)</p>
+                <p class="tip">(当前状态时间：<span id="currentTime"></span>)</p>
+                <button id="clear_point" type="button" class="btn btn-danger">Clear points</button>
+                <label for="normal">上传位置</label>
+                <input type="radio" name="upType" id="normal" checked="checked">
+                <label for="delay" style="margin-left: 20px">补传位置</label>
+                <input type="radio" name="upType" id="delay">
+                <ul id="point_list">
+
+                </ul>
+            </div>
+
+            <div id="upload_cmd">
+                <button id="normal_upload" type="button" class="btn btn-primary">上传位置</button>
+                <button id="delay_upload" type="button" class="btn btn-info">补传位置</button>
+                <button id="upalarm" type="button" class="btn btn-primary">上传告警</button>
+                <select id="alarm-type">
+                    <option value="1">出围栏报警</option>
+                    <option value="2">进围栏报警</option>
+                    <option value="4">超速报警</option>
+                    <option value="7">拔出报警</option>
+                    <option value="8">移动报警</option>
+                </select>
+                <button id="back" type="button" class="btn btn-small">返回</button>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
